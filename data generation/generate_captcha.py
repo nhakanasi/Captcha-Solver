@@ -365,7 +365,7 @@ def gen_captcha4(n):
                 draw.ellipse([x-2, y-2, x+2, y+2], fill=random.choice(fill_colors))
             final_img.paste(final_layer,(0,0),final_layer)
 
-
+            
             # Derive per-char warped boxes analytically
             # For each original span (x0,x1,y0,y1):
             boxes = []

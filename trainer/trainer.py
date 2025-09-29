@@ -12,22 +12,22 @@ from utils.beam import batch_translate_beam_search, translate
 import os
 
 class CaptchaTrainer:
-    def __init__(self):
+    def __init__(self, annote_path = 'annote.txt', eval_path = 'eval_annote.txt', batch = 16, lr = 0.01, smoothing = 0.1, device = 'cpu'):
         self.model, self.vocab = build_model()
-        self.optimizer = AdamW(self.model.parameters(), betas=(0.9, 0.98), eps=1e-09)
-        self.train_gen = OCRData('annote.txt','')
-        self.valid_gen = OCRData('eval_annote.txt', '')
-        self.batch_size = 16
-        self.epoch_step = len(self.train_gen)//16
+        self.optimizer = AdamW(self.model.parameters())
+        self.train_gen = OCRData(annote_path,'')
+        self.valid_gen = OCRData(eval_path, '')
+        self.batch_size = batch
+        self.epoch_step = len(self.train_gen)//self.batch_size
         self.beamsearch = True
-        self.scheduler = OneCycleLR(self.optimizer, max_lr=0.01, steps_per_epoch=500, epochs=10)
+        self.scheduler = OneCycleLR(self.optimizer, max_lr=lr, steps_per_epoch=self.epoch_step, epochs=10)
         self.criterion = LabelSmoothingLoss(
-            len(self.vocab), padding_idx=self.vocab.pad, smoothing=0.1
+            len(self.vocab), padding_idx=self.vocab.pad, smoothing=smoothing
         )
-        self.train_loader = DataLoader(self.train_gen, batch_size=16, shuffle=True, num_workers=4)  # Changed to 0 for debugging
+        self.train_loader = DataLoader(self.train_gen, batch_size=self.batch_size, shuffle=True, num_workers=4)  # Changed to 0 for debugging
         self.train_loss = []
         self.iter = 0  # Initialize iteration counter
-        self.device = 'cpu' 
+        self.device = device
         self.vocab_size = len(self.vocab)
 
     def train_epoch(self, epoch):

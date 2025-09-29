@@ -1,0 +1,7 @@
+*.txt
+*.rar
+*.zip
+img/
+captcha/
+private/
+inference_output
